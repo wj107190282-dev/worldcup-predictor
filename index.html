@@ -1,0 +1,735 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>2026 世界杯 · 小组赛比分概率预测</title>
+<style>
+  :root{
+    --bg0:#070b14; --bg1:#0c1426; --bg2:#101c33;
+    --card:rgba(255,255,255,.045); --card2:rgba(255,255,255,.06);
+    --line:rgba(255,255,255,.09); --line2:rgba(255,255,255,.14);
+    --txt:#eaf0fb; --mut:#93a0bb; --mut2:#6b7793;
+    --gold:#ffd24a; --gold2:#f0a93a;
+    --green:#2bd17e; --blue:#4da3ff; --red:#ff6b6b; --purple:#b388ff;
+    --shadow:0 18px 48px rgba(0,0,0,.55);
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{margin:0;padding:0}
+  body{
+    font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Segoe UI",Roboto,sans-serif;
+    color:var(--txt); background:var(--bg0);
+    background-image:
+      radial-gradient(1100px 700px at 12% -8%, rgba(43,209,126,.10), transparent 60%),
+      radial-gradient(1000px 720px at 92% -4%, rgba(77,163,255,.12), transparent 60%),
+      radial-gradient(900px 800px at 50% 120%, rgba(255,210,74,.07), transparent 55%);
+    background-attachment:fixed;
+    min-height:100vh; line-height:1.5; -webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:980px;margin:0 auto;padding:18px 16px 60px}
+
+  /* header */
+  header{position:relative;padding:20px 20px 18px;border-radius:22px;overflow:hidden;
+    background:linear-gradient(135deg, rgba(255,210,74,.14), rgba(77,163,255,.10) 55%, rgba(43,209,126,.10));
+    border:1px solid var(--line2); box-shadow:var(--shadow); margin-bottom:16px}
+  header::after{content:"";position:absolute;inset:0;background:
+    radial-gradient(420px 200px at 88% 0%, rgba(255,255,255,.10), transparent 70%);pointer-events:none}
+  .htop{display:flex;align-items:center;gap:13px;position:relative;z-index:1}
+  .trophy{font-size:38px;filter:drop-shadow(0 4px 10px rgba(255,210,74,.5))}
+  .htext h1{margin:0;font-size:22px;letter-spacing:.5px;font-weight:800;
+    background:linear-gradient(90deg,#fff,#ffe9a8);-webkit-background-clip:text;background-clip:text;color:transparent}
+  .htext .sub{color:var(--mut);font-size:12.5px;margin-top:3px}
+  .badges{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px;position:relative;z-index:1}
+  .badge{font-size:11.5px;padding:5px 11px;border-radius:999px;background:rgba(255,255,255,.07);
+    border:1px solid var(--line);color:var(--mut);display:inline-flex;align-items:center;gap:6px}
+  .badge.warn{color:#ffdf9b;border-color:rgba(255,210,74,.32);background:rgba(255,210,74,.08)}
+  .badge.regen{cursor:pointer;color:#bcd9ff;border-color:rgba(77,163,255,.32);background:rgba(77,163,255,.09);
+    -webkit-user-select:none;user-select:none;transition:.15s}
+  .badge.regen:hover{background:rgba(77,163,255,.18);color:#fff}
+  .badge.regen:active{transform:scale(.96)}
+
+  /* controls */
+  .controls{display:flex;flex-direction:column;gap:11px;margin-bottom:14px}
+  .search{display:flex;align-items:center;gap:9px;background:var(--card);border:1px solid var(--line);
+    border-radius:13px;padding:10px 13px}
+  .search input{flex:1;background:transparent;border:0;outline:0;color:var(--txt);font-size:14.5px}
+  .search input::placeholder{color:var(--mut2)}
+  .pills{display:flex;gap:7px;overflow-x:auto;padding-bottom:4px;scrollbar-width:none}
+  .pills::-webkit-scrollbar{display:none}
+  .pill{flex:0 0 auto;padding:7px 13px;border-radius:999px;border:1px solid var(--line);
+    background:var(--card);color:var(--mut);font-size:13px;font-weight:600;cursor:pointer;
+    transition:.15s;white-space:nowrap}
+  .pill:hover{color:var(--txt);border-color:var(--line2)}
+  .pill.on{background:linear-gradient(135deg,var(--gold),var(--gold2));color:#241a00;border-color:transparent;
+    box-shadow:0 6px 16px rgba(255,210,74,.28)}
+
+  /* group block */
+  .group-block{margin-bottom:22px}
+  .group-head{display:flex;align-items:center;gap:10px;font-weight:800;font-size:15px;
+    margin:6px 2px 11px;letter-spacing:.3px}
+  .group-head .gtag{width:26px;height:26px;border-radius:8px;display:grid;place-items:center;
+    background:linear-gradient(135deg,var(--gold),var(--gold2));color:#241a00;font-size:14px;font-weight:900}
+  .ghint{font-size:15px;color:var(--mut);letter-spacing:2px}
+
+  /* match card */
+  .match{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:13px 14px;
+    margin-bottom:10px;cursor:pointer;transition:.15s;position:relative;overflow:hidden}
+  .match:hover{border-color:var(--line2);background:var(--card2);transform:translateY(-1px)}
+  .match:active{transform:translateY(0)}
+  .m-meta{display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-size:11.5px;color:var(--mut);margin-bottom:11px}
+  .m-meta .md{padding:2px 8px;border-radius:6px;background:rgba(77,163,255,.14);color:#bcd9ff;font-weight:700}
+  .m-meta .dot{width:3px;height:3px;border-radius:50%;background:var(--mut2)}
+  .m-body{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:10px}
+  .team{display:flex;align-items:center;gap:9px;min-width:0}
+  .team.away{flex-direction:row-reverse;text-align:right}
+  .flag{font-size:27px;line-height:1;flex:0 0 auto}
+  .tinfo{min-width:0}
+  .tname{font-weight:700;font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .trank{font-size:11px;color:var(--mut2)}
+  .vs{font-size:12px;color:var(--mut2);font-weight:700;padding:0 2px}
+  .m-foot{margin-top:12px}
+  .probbar{height:8px;border-radius:999px;overflow:hidden;display:flex;background:rgba(255,255,255,.06)}
+  .probbar i{display:block;height:100%}
+  .seg-h{background:linear-gradient(90deg,var(--gold),var(--gold2))}
+  .seg-d{background:#566079}
+  .seg-a{background:linear-gradient(90deg,#4da3ff,#3b7fe0)}
+  .problbl{display:flex;justify-content:space-between;font-size:11px;color:var(--mut);margin-top:6px}
+  .problbl b{color:var(--txt);font-weight:700}
+  .tap{position:absolute;right:12px;top:12px;font-size:10.5px;color:var(--mut2);
+    border:1px solid var(--line);border-radius:6px;padding:2px 6px}
+  @media(max-width:600px){.tap{display:none} .m-meta{padding-right:2px}}
+
+  .empty{text-align:center;color:var(--mut);padding:50px 0;font-size:14px}
+
+  /* modal */
+  .ovl{position:fixed;inset:0;background:rgba(3,6,12,.74);backdrop-filter:blur(7px);
+    display:none;align-items:flex-end;justify-content:center;z-index:50;padding:0}
+  .ovl.show{display:flex}
+  @media(min-width:620px){.ovl{align-items:center;padding:24px}}
+  .modal{width:100%;max-width:640px;max-height:92vh;overflow-y:auto;background:linear-gradient(180deg,#0e1729,#0a1120);
+    border:1px solid var(--line2);border-radius:22px 22px 0 0;box-shadow:var(--shadow);
+    animation:rise .26s cubic-bezier(.2,.8,.2,1)}
+  @media(min-width:620px){.modal{border-radius:22px}}
+  @keyframes rise{from{transform:translateY(40px);opacity:.4}to{transform:translateY(0);opacity:1}}
+  .modal::-webkit-scrollbar{width:8px}
+  .modal::-webkit-scrollbar-thumb{background:rgba(255,255,255,.14);border-radius:8px}
+
+  .mhead{position:sticky;top:0;z-index:2;padding:16px 18px 14px;
+    background:linear-gradient(180deg,rgba(16,28,51,.98),rgba(14,23,41,.92));
+    border-bottom:1px solid var(--line);backdrop-filter:blur(6px)}
+  .mh-top{display:flex;justify-content:space-between;align-items:center;font-size:11.5px;color:var(--mut);margin-bottom:12px;gap:8px;flex-wrap:wrap}
+  .mh-top .left{display:flex;align-items:center;gap:7px;flex-wrap:wrap}
+  .close{flex:0 0 auto;width:30px;height:30px;border-radius:50%;border:1px solid var(--line2);
+    background:rgba(255,255,255,.05);color:var(--txt);font-size:16px;cursor:pointer;display:grid;place-items:center}
+  .close:hover{background:rgba(255,255,255,.12)}
+  .mh-teams{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:8px}
+  .mh-teams .flag{font-size:36px}
+  .mh-teams .tname{font-size:16px;white-space:normal}
+  .mh-teams .vs{font-size:13px}
+  .chip{padding:3px 9px;border-radius:7px;background:rgba(255,255,255,.06);border:1px solid var(--line);
+    display:inline-flex;align-items:center;gap:5px}
+
+  .sec{padding:16px 18px;border-bottom:1px solid var(--line)}
+  .sec:last-child{border-bottom:0}
+  .sec-h{font-size:13px;font-weight:800;letter-spacing:.4px;margin-bottom:13px;display:flex;align-items:center;gap:8px;color:#fff}
+  .sec-h .i{font-size:15px}
+  .sec-h .note{font-size:11px;color:var(--mut2);font-weight:500;margin-left:auto}
+
+  /* 1x2 summary */
+  .wdl{display:grid;grid-template-columns:1fr 1fr 1fr;gap:9px;margin-bottom:13px}
+  .wdl .cell{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:11px 8px;text-align:center}
+  .wdl .cell.hl{border-color:rgba(255,210,74,.4);background:rgba(255,210,74,.07)}
+  .wdl .lab{font-size:11px;color:var(--mut);margin-bottom:4px}
+  .wdl .big{font-size:21px;font-weight:800}
+  .wdl .h .big{color:var(--gold)} .wdl .d .big{color:#aab4cc} .wdl .a .big{color:var(--blue)}
+  .mkt{font-size:11.5px;color:var(--mut)}
+  .mkt-row{display:flex;align-items:center;gap:8px;padding:7px 0;border-top:1px dashed var(--line)}
+  .mkt-row .tag{flex:0 0 50px;color:var(--txt);font-weight:700;font-size:11.5px}
+  .mkt-row .val{flex:1;display:flex;gap:7px;flex-wrap:wrap}
+  .od{font-variant-numeric:tabular-nums;background:rgba(255,255,255,.05);border:1px solid var(--line);
+    border-radius:6px;padding:3px 7px;font-size:11.5px;color:#dfe6f5}
+  .od b{color:var(--mut2);font-weight:600;margin-right:3px}
+
+  /* factors */
+  .factor{display:flex;gap:11px;padding:10px 0;border-top:1px solid var(--line)}
+  .factor:first-of-type{border-top:0}
+  .fic{flex:0 0 30px;height:30px;border-radius:9px;display:grid;place-items:center;font-size:15px;
+    background:rgba(255,255,255,.05);border:1px solid var(--line)}
+  .fmain{flex:1;min-width:0}
+  .fname{font-size:12.5px;font-weight:700;display:flex;align-items:center;gap:8px;margin-bottom:3px}
+  .fnote{font-size:11.5px;color:var(--mut);line-height:1.45}
+  .fimpact{flex:0 0 96px;display:flex;flex-direction:column;align-items:flex-end;gap:5px;padding-top:2px}
+  .fbar{position:relative;width:90px;height:6px;border-radius:999px;background:rgba(255,255,255,.07);overflow:hidden}
+  .fbar .c{position:absolute;left:50%;top:0;bottom:0;width:1px;background:rgba(255,255,255,.22)}
+  .fbar i{position:absolute;top:0;bottom:0;border-radius:999px}
+  .fbar i.r{left:50%;background:linear-gradient(90deg,var(--gold2),var(--gold))}
+  .fbar i.l{right:50%;background:linear-gradient(90deg,#3b7fe0,#4da3ff)}
+  .fval{font-size:10.5px;font-weight:700;font-variant-numeric:tabular-nums}
+  .fval.h{color:var(--gold)} .fval.a{color:var(--blue)} .fval.n{color:var(--mut)}
+
+  /* scores table */
+  .legend{font-size:10.8px;color:var(--mut2);margin-bottom:9px;display:flex;gap:13px;flex-wrap:wrap}
+  .legend span b{color:var(--mut)}
+  .stbl{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums}
+  .stbl th{font-size:10.5px;color:var(--mut2);font-weight:600;text-align:right;padding:7px 6px;
+    position:sticky;top:0;text-transform:none;letter-spacing:0}
+  .stbl th:first-child{text-align:left}
+  .stbl td{padding:9px 6px;border-top:1px solid var(--line);text-align:right;font-size:12.5px}
+  .stbl td:first-child{text-align:left}
+  .srow{transition:.12s}
+  .srow:hover{background:rgba(255,255,255,.03)}
+  .score{display:inline-flex;align-items:center;gap:8px;font-weight:800;font-size:14px;
+    border-left:3px solid var(--mut2);padding-left:9px}
+  .score.h{border-color:var(--gold)} .score.d{border-color:#7a8398} .score.a{border-color:var(--blue)}
+  .pcell{font-weight:800;color:#fff}
+  .pbarmini{display:inline-block;vertical-align:middle;height:5px;border-radius:3px;margin-left:7px;
+    background:linear-gradient(90deg,var(--gold),var(--gold2));max-width:54px}
+  .ocell{color:#cfd8ea}
+  .ocell.a-od{color:#bcd9ff}
+  .srow.rest td{color:var(--mut);font-size:11.5px;font-style:italic}
+
+  footer{text-align:center;color:var(--mut2);font-size:11px;margin-top:26px;line-height:1.7}
+  footer b{color:var(--mut)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="htop">
+      <div class="trophy">🏆</div>
+      <div class="htext">
+        <h1>2026 世界杯 · 比分概率预测</h1>
+        <div class="sub">FIFA World Cup 26™ · 美国 / 加拿大 / 墨西哥 · 48 队 · 12 小组</div>
+      </div>
+    </div>
+    <div class="badges">
+      <span class="badge">⚽ 72 场小组赛</span>
+      <span class="badge">📊 多因素泊松模型</span>
+      <span class="badge">💹 欧 / 亚 / 足彩 三盘口</span>
+      <span class="badge warn">⚠️ 娱乐模拟 · 非投注建议</span>
+      <span class="badge regen" id="regen">🎲 重新生成一套</span>
+    </div>
+  </header>
+
+  <div class="controls">
+    <div class="search">
+      <span style="font-size:15px;opacity:.7">🔍</span>
+      <input id="search" type="text" placeholder="搜索球队（如：阿根廷、巴西、日本…）" autocomplete="off">
+    </div>
+    <div class="pills" id="pills"></div>
+  </div>
+
+  <div id="schedule"></div>
+
+  <footer>
+    本程序为<b>纯娱乐性算法模拟</b>，赛程为虚构分组演示。<br>
+    所有概率与赔率均由内置数学模型即时生成，<b>不代表真实数据，不构成任何投注或决策建议</b>。<br>
+    请理性看球，远离赌博。
+  </footer>
+</div>
+
+<div class="ovl" id="ovl">
+  <div class="modal" id="modal"></div>
+</div>
+
+<script>
+/* ============================================================
+   数据：48 支球队（含 emoji 国旗与实力评分）
+   ============================================================ */
+const TEAMS = [
+  {c:'ARG',n:'阿根廷',f:'🇦🇷',r:2145},{c:'FRA',n:'法国',f:'🇫🇷',r:2098},
+  {c:'ESP',n:'西班牙',f:'🇪🇸',r:2085},{c:'ENG',n:'英格兰',f:'🏴󠁧󠁢󠁥󠁮󠁧󠁿',r:2065},
+  {c:'BRA',n:'巴西',f:'🇧🇷',r:2042},{c:'POR',n:'葡萄牙',f:'🇵🇹',r:2035},
+  {c:'NED',n:'荷兰',f:'🇳🇱',r:2028},{c:'ITA',n:'意大利',f:'🇮🇹',r:1992},
+  {c:'GER',n:'德国',f:'🇩🇪',r:1988},{c:'BEL',n:'比利时',f:'🇧🇪',r:1978},
+  {c:'CRO',n:'克罗地亚',f:'🇭🇷',r:1955},{c:'URU',n:'乌拉圭',f:'🇺🇾',r:1948},
+  {c:'COL',n:'哥伦比亚',f:'🇨🇴',r:1932},{c:'MAR',n:'摩洛哥',f:'🇲🇦',r:1922},
+  {c:'JPN',n:'日本',f:'🇯🇵',r:1885},{c:'SUI',n:'瑞士',f:'🇨🇭',r:1876},
+  {c:'MEX',n:'墨西哥',f:'🇲🇽',r:1862},{c:'DEN',n:'丹麦',f:'🇩🇰',r:1864},
+  {c:'USA',n:'美国',f:'🇺🇸',r:1858},{c:'SEN',n:'塞内加尔',f:'🇸🇳',r:1852},
+  {c:'AUT',n:'奥地利',f:'🇦🇹',r:1835},{c:'ECU',n:'厄瓜多尔',f:'🇪🇨',r:1822},
+  {c:'NOR',n:'挪威',f:'🇳🇴',r:1818},{c:'KOR',n:'韩国',f:'🇰🇷',r:1812},
+  {c:'UKR',n:'乌克兰',f:'🇺🇦',r:1802},{c:'TUR',n:'土耳其',f:'🇹🇷',r:1795},
+  {c:'SRB',n:'塞尔维亚',f:'🇷🇸',r:1788},{c:'SWE',n:'瑞典',f:'🇸🇪',r:1786},
+  {c:'POL',n:'波兰',f:'🇵🇱',r:1782},{c:'GRE',n:'希腊',f:'🇬🇷',r:1778},
+  {c:'WAL',n:'威尔士',f:'🏴󠁧󠁢󠁷󠁬󠁳󠁿',r:1772},{c:'NGA',n:'尼日利亚',f:'🇳🇬',r:1768},
+  {c:'CAN',n:'加拿大',f:'🇨🇦',r:1762},{c:'IRN',n:'伊朗',f:'🇮🇷',r:1758},
+  {c:'CMR',n:'喀麦隆',f:'🇨🇲',r:1748},{c:'ALG',n:'阿尔及利亚',f:'🇩🇿',r:1742},
+  {c:'CIV',n:'科特迪瓦',f:'🇨🇮',r:1738},{c:'AUS',n:'澳大利亚',f:'🇦🇺',r:1736},
+  {c:'EGY',n:'埃及',f:'🇪🇬',r:1732},{c:'CHI',n:'智利',f:'🇨🇱',r:1728},
+  {c:'GHA',n:'加纳',f:'🇬🇭',r:1722},{c:'PER',n:'秘鲁',f:'🇵🇪',r:1718},
+  {c:'TUN',n:'突尼斯',f:'🇹🇳',r:1712},{c:'PAR',n:'巴拉圭',f:'🇵🇾',r:1702},
+  {c:'SAU',n:'沙特阿拉伯',f:'🇸🇦',r:1698},{c:'CRC',n:'哥斯达黎加',f:'🇨🇷',r:1682},
+  {c:'QAT',n:'卡塔尔',f:'🇶🇦',r:1672},{c:'NZL',n:'新西兰',f:'🇳🇿',r:1622},
+];
+const sortedByR=[...TEAMS].sort((a,b)=>b.r-a.r);
+sortedByR.forEach((t,i)=>t.rank=i+1);
+
+/* 16 座承办球场 */
+const VENUES=[
+  {city:'纽约/新泽西',stad:'大都会人寿球场',cc:'🇺🇸',clim:'temperate'},
+  {city:'洛杉矶',stad:'SoFi 体育场',cc:'🇺🇸',clim:'warm'},
+  {city:'达拉斯',stad:'AT&T 体育场',cc:'🇺🇸',clim:'hot'},
+  {city:'旧金山湾区',stad:'利惠体育场',cc:'🇺🇸',clim:'mild'},
+  {city:'迈阿密',stad:'硬石体育场',cc:'🇺🇸',clim:'humid'},
+  {city:'亚特兰大',stad:'奔驰体育场',cc:'🇺🇸',clim:'humid'},
+  {city:'西雅图',stad:'流明球场',cc:'🇺🇸',clim:'mild'},
+  {city:'休斯顿',stad:'NRG 体育场',cc:'🇺🇸',clim:'hot'},
+  {city:'费城',stad:'林肯金融球场',cc:'🇺🇸',clim:'temperate'},
+  {city:'堪萨斯城',stad:'箭头体育场',cc:'🇺🇸',clim:'temperate'},
+  {city:'波士顿',stad:'吉列体育场',cc:'🇺🇸',clim:'mild'},
+  {city:'墨西哥城',stad:'阿兹特克体育场',cc:'🇲🇽',clim:'altitude'},
+  {city:'瓜达拉哈拉',stad:'阿克隆体育场',cc:'🇲🇽',clim:'warm'},
+  {city:'蒙特雷',stad:'BBVA 体育场',cc:'🇲🇽',clim:'hot'},
+  {city:'多伦多',stad:'BMO 球场',cc:'🇨🇦',clim:'mild'},
+  {city:'温哥华',stad:'BC 体育场',cc:'🇨🇦',clim:'mild'},
+];
+
+/* ============================================================
+   伪随机（按 key 播种，保证每次刷新内容稳定）
+   ============================================================ */
+function hashStr(s){let h=2166136261>>>0;for(let i=0;i<s.length;i++){h^=s.charCodeAt(i);h=Math.imul(h,16777619)>>>0;}return h>>>0;}
+function mulberry32(a){return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296;};}
+function rngFor(seed){return mulberry32(hashStr(seed));}
+function pick(r,arr){return arr[Math.floor(r()*arr.length)];}
+function clamp(v,a,b){return Math.max(a,Math.min(b,v));}
+
+/* ============================================================
+   实例种子：决定整套预测。默认固定 → 每次打开完全一致；
+   localStorage 记忆，保证同一设备刷新/重开数据稳定不变。
+   即便隐私模式取不到存储，也回退固定默认种子，依旧确定。
+   ============================================================ */
+const SEED_KEY='wc2026_instance_seed_v1';
+let INSTANCE_SEED='wc-default';
+try{const s=localStorage.getItem(SEED_KEY);if(s)INSTANCE_SEED=s;else localStorage.setItem(SEED_KEY,INSTANCE_SEED);}catch(e){}
+
+/* ============================================================
+   分组：按评分分 4 档，蛇形抽签
+   ============================================================ */
+function shuffle(arr,r){for(let i=arr.length-1;i>0;i--){const j=Math.floor(r()*(i+1));[arr[i],arr[j]]=[arr[j],arr[i]];}return arr;}
+const drawR=rngFor(INSTANCE_SEED+'-draw-v1');
+const pots=[sortedByR.slice(0,12),sortedByR.slice(12,24),sortedByR.slice(24,36),sortedByR.slice(36,48)];
+pots.forEach(p=>shuffle(p,drawR));
+const groups=[];
+for(let g=0;g<12;g++){
+  groups.push({name:String.fromCharCode(65+g),teams:[pots[0][g],pots[1][g],pots[2][g],pots[3][g]]});
+}
+
+/* ============================================================
+   赛程：每组单循环 6 场
+   ============================================================ */
+const MATCHDAYS=[[[0,1],[2,3]],[[0,2],[3,1]],[[0,3],[1,2]]];
+const WD=['周日','周一','周二','周三','周四','周五','周六'];
+const KICK=['12:00','15:00','18:00','21:00'];
+const matches=[];
+groups.forEach((grp,gi)=>{
+  MATCHDAYS.forEach((md,mdi)=>{
+    md.forEach((pair,pi)=>{
+      const A=grp.teams[pair[0]],B=grp.teams[pair[1]];
+      const id=grp.name+'-'+mdi+'-'+pi;
+      const r=rngFor(INSTANCE_SEED+'-match-'+id);
+      const venue=VENUES[Math.floor(r()*VENUES.length)];
+      const d=new Date(2026,5,11);
+      d.setDate(d.getDate()+mdi*6+Math.floor(gi/2));
+      const date=(d.getMonth()+1)+'月'+d.getDate()+'日 '+WD[d.getDay()];
+      const time=KICK[Math.floor(r()*KICK.length)];
+      matches.push({id,group:grp.name,mdi,A,B,venue,date,time,r:rngFor(INSTANCE_SEED+'-model-'+id)});
+    });
+  });
+});
+
+/* ============================================================
+   天气
+   ============================================================ */
+function genWeather(clim,r){
+  const base={hot:33,humid:30,warm:28,temperate:24,altitude:21,mild:19}[clim]||25;
+  const temp=Math.round(base+(r()*6-3));
+  let conds=[['☀️','晴'],['🌤️','少云'],['⛅','多云'],['☁️','阴']];
+  if(clim==='humid'||clim==='altitude')conds=conds.concat([['🌦️','阵雨'],['🌧️','小雨'],['⛈️','雷阵雨']]);
+  else conds=conds.concat([['🌦️','阵雨'],['🌧️','小雨']]);
+  const [ic,nm]=pick(r,conds);
+  const hum=clim==='humid'?70+Math.round(r()*20):40+Math.round(r()*30);
+  return {ic,nm,temp,hum,rain:nm.includes('雨')};
+}
+
+/* ============================================================
+   概率引擎
+   ============================================================ */
+function poiss(k,l){let p=Math.exp(-l);for(let i=1;i<=k;i++)p*=l/i;return p;}
+
+function computeModel(m){
+  const A=m.A,B=m.B,r=m.r,V=m.venue;
+  const w=genWeather(V.clim,r);
+  const diff=A.r-B.r;
+  let lamA=1.38*Math.exp(diff/430);
+  let lamB=1.38*Math.exp(-diff/430);
+  const factors=[];
+  const mulA=(p)=>{lamA*=(1+p/100);};
+  const mulB=(p)=>{lamB*=(1+p/100);};
+
+  // 1) 历史战绩
+  {
+    const strong=A.r>=B.r?A:B, weak=strong===A?B:A;
+    const tot=6+Math.floor(r()*7);
+    let wn=Math.round(tot*(0.42+r()*0.22)), dr=Math.round((tot-wn)*(0.3+r()*0.3));
+    let ls=tot-wn-dr; if(ls<0){ls=0;}
+    const base=clamp(diff/130,-3.2,3.2)*0.9+(r()*1.4-0.7);
+    const sA=A.r>=B.r?Math.abs(base)*0.8:-Math.abs(base)*0.8;
+    const sB=-sA*0.55;
+    mulA(sA);mulB(sB);
+    factors.push({ic:'📊',name:'历史战绩',type:'side',sA,sB,
+      note:`近 ${tot} 次交锋 ${strong.n} ${wn}胜${dr}平${ls}负，心理与战术层面占据上风。`});
+  }
+  // 2) 球员状态
+  {
+    const fA=r()*9-4.5, fB=r()*9-4.5;
+    const hot=Math.abs(fA)>=Math.abs(fB)?{t:A,v:fA}:{t:B,v:fB};
+    const sA=fA*0.7, sB=fB*0.7;
+    mulA(sA);mulB(sB);
+    const goodTpl=[`核心前锋俱乐部赛季井喷，近 5 场贡献 ${3+Math.floor(r()*4)} 球，火力全开。`,
+      `中场组织者状态回暖，传球与推进效率联赛领先。`,
+      `锋线三叉戟默契度拉满，热身赛连续破门。`];
+    const badTpl=[`头号射手陷入进球荒，近 4 场颗粒无收，手感冰凉。`,
+      `中场核心赛季末体能透支，跑动数据明显下滑。`,
+      `主力轮换频繁，整体配合略显生疏。`];
+    factors.push({ic:'🔥',name:'球员状态',type:'side',sA,sB,
+      note:`${hot.t.n}${hot.v>=0?pick(r,goodTpl):pick(r,badTpl)}`});
+  }
+  // 3) 伤病情况
+  {
+    const iA=-(Math.pow(r(),1.6)*6.5), iB=-(Math.pow(r(),1.6)*6.5);
+    const worse=iA<=iB?A:B;
+    mulA(iA);mulB(iB);
+    const tpl=[`主力中卫累积黄牌停赛，后防线被迫轮换。`,`当家球星带伤训练，出场时间存疑。`,
+      `两名主力中场肌肉伤势未愈，中场厚度下降。`,`边路快马脚踝扭伤缺阵，进攻宽度受限。`,
+      `门将赛前发烧，替补门将临危受命。`];
+    factors.push({ic:'🏥',name:'伤病情况',type:'side',sA:iA,sB:iB,
+      note:`${worse.n}伤病更重：${pick(r,tpl)}`});
+  }
+  // 4) 球员感情状态
+  {
+    const mA=r()*8-4, mB=r()*8-4;
+    const key=Math.abs(mA)>=Math.abs(mB)?{t:A,v:mA}:{t:B,v:mB};
+    const sA=mA*0.6, sB=mB*0.6;
+    mulA(sA);mulB(sB);
+    const good=[`队长喜得贵子士气高涨，更衣室凝聚力爆棚。`,`球队全员续约、奖金到位，备战氛围融洽。`,
+      `老将宣布这是最后一届大赛，全队为其拼尽全力。`];
+    const bad=[`更衣室传出不和传闻，核心与主帅战术理念分歧公开化。`,`头号球星深陷转会绯闻，训练注意力被分散。`,
+      `主力与女友分手登上热搜，情绪状态引发外界担忧。`,`奖金分配争议发酵，球员备战心思浮动。`];
+    factors.push({ic:'💗',name:'球员感情状态',type:'side',sA,sB,
+      note:`${key.t.n}${key.v>=0?pick(r,good):pick(r,bad)}`});
+  }
+  // 5) 天气情况（影响整体节奏）
+  {
+    let e=0,desc='';
+    if(w.temp>=31){e=-(3.5+r()*4);desc=`比赛日 ${w.temp}°C 高温、湿度 ${w.hum}%，体能消耗剧增，比赛节奏被迫放缓。`;}
+    else if(w.rain){e=-(1.5+r()*3);desc=`赛前${w.nm}导致草皮湿滑，传控失误增多，进球难度上升。`;}
+    else if(V.clim==='altitude'){e=-(2+r()*3);desc=`高原主场空气稀薄，客队体能与呼吸节奏面临考验。`;}
+    else {e=(r()*3);desc=`${w.temp}°C 体感舒适，利于双方展开攻势，比赛有望开放。`;}
+    mulA(e);mulB(e);
+    factors.push({ic:w.ic,name:'天气情况',type:'total',totalEff:e,note:desc});
+  }
+  // 6) 比赛地政治状况
+  {
+    let sA=0,sB=0,note='';
+    if(A.f===V.cc){sA=3+r()*3.5;note=`东道主 ${A.n} 坐镇 ${V.city}，享主场山呼海啸般助威与赛程红利。`;}
+    else if(B.f===V.cc){sB=3+r()*3.5;note=`东道主 ${B.n} 坐镇 ${V.city}，主场氛围与政策倾斜带来加成。`;}
+    else{
+      const side=r()<0.5?'A':'B';const t=-(1+r()*3);
+      if(side==='A')sA=t;else sB=t;
+      const tpl=[`${side==='A'?A.n:B.n}因地区局势紧张，球员承受额外舆论与安保压力。`,
+        `中立场地远征 ${V.city}，${side==='A'?A.n:B.n}球迷到场有限，客场氛围吃亏。`,
+        `签证与行程安排波折，${side==='A'?A.n:B.n}备战周期受到一定影响。`];
+      note=pick(r,tpl);
+    }
+    mulA(sA);mulB(sB);
+    factors.push({ic:'🏛️',name:'比赛地政治状况',type:'side',sA,sB,note});
+  }
+  // 7) 盘口策略
+  {
+    const side=r()<0.5?'A':'B';
+    const mag=1.5+r()*3;
+    const sA=side==='A'?mag:-mag*0.4;
+    const sB=side==='B'?mag:-mag*0.4;
+    mulA(sA);mulB(sB);
+    const t=side==='A'?A:B;
+    const o1=(1.6+r()*1.8), o2=o1-(0.1+r()*0.25);
+    factors.push({ic:'💹',name:'盘口策略',type:'side',sA,sB,
+      note:`临场 ${t.n} 欧赔由 ${o1.toFixed(2)} 下调至 ${o2.toFixed(2)}，亚盘水位走低，机构资金明显看好。`});
+  }
+
+  lamA=clamp(lamA,0.22,3.9);
+  lamB=clamp(lamB,0.22,3.9);
+
+  // 比分网格
+  const G=8;
+  const pa=[],pb=[];
+  for(let i=0;i<=G;i++){pa.push(poiss(i,lamA));pb.push(poiss(i,lamB));}
+  let scores=[],sum=0;
+  for(let i=0;i<=G;i++)for(let j=0;j<=G;j++){const p=pa[i]*pb[j];scores.push({i,j,p});sum+=p;}
+  scores.forEach(s=>s.p/=sum);
+  let pH=0,pD=0,pA=0;
+  scores.forEach(s=>{if(s.i>s.j)pH+=s.p;else if(s.i===s.j)pD+=s.p;else pA+=s.p;});
+  scores.sort((a,b)=>b.p-a.p);
+  const top=scores.slice(0,12);
+  const rest=1-top.reduce((s,x)=>s+x.p,0);
+
+  // 亚盘让球
+  const sup=lamA-lamB;
+  const line=Math.round(Math.abs(sup)/0.25)*0.25;
+  const favA=sup>=0;
+  const edge=Math.abs(sup)-line;
+  const favOdds=clamp(0.93-edge*0.45,0.70,1.02);
+  const dogOdds=clamp(1.85-favOdds,0.78,1.12);
+
+  return {w,lamA,lamB,factors,top,rest,pH,pD,pA,ah:{favA,line,favOdds,dogOdds}};
+}
+matches.forEach(m=>m.model=computeModel(m));
+
+/* ============================================================
+   赔率换算
+   ============================================================ */
+function oddsScore(p){const fair=1/p;return{euro:fair*0.82,asia:fair*0.88-1,cai:fair*0.77};}
+function odds1x2(p){const fair=1/p;return{euro:fair*0.93,cai:fair*0.88};}
+const od=x=>x.toFixed(2);
+const pct=x=>(x*100).toFixed(1)+'%';
+
+/* ============================================================
+   渲染：赛程
+   ============================================================ */
+let selected='ALL', searchTerm='';
+const pillsEl=document.getElementById('pills');
+const schedEl=document.getElementById('schedule');
+
+function renderPills(){
+  let html=`<div class="pill ${selected==='ALL'?'on':''}" data-g="ALL">全部</div>`;
+  groups.forEach(g=>{html+=`<div class="pill ${selected===g.name?'on':''}" data-g="${g.name}">${g.name} 组</div>`;});
+  pillsEl.innerHTML=html;
+}
+function outcomeLabel(md){
+  const{pH,pD,pA}=md;const mx=Math.max(pH,pD,pA);
+  if(mx===pH)return{t:'主胜',c:'var(--gold)'};
+  if(mx===pA)return{t:'客胜',c:'var(--blue)'};
+  return{t:'平局',c:'#aab4cc'};
+}
+function matchCard(m){
+  const md=m.model, ol=outcomeLabel(md);
+  const A=m.A,B=m.B;
+  return `<div class="match" data-id="${m.id}">
+    <div class="tap">点击查看 ›</div>
+    <div class="m-meta">
+      <span class="md">第 ${m.mdi+1} 轮</span><span class="dot"></span>
+      <span>${m.date} ${m.time}</span><span class="dot"></span>
+      <span>${m.venue.cc} ${m.venue.city}·${m.venue.stad}</span><span class="dot"></span>
+      <span>${md.w.ic} ${md.w.temp}°C ${md.w.nm}</span>
+    </div>
+    <div class="m-body">
+      <div class="team">
+        <span class="flag">${A.f}</span>
+        <div class="tinfo"><div class="tname">${A.n}</div><div class="trank">世界第 ${A.rank} 档</div></div>
+      </div>
+      <div class="vs">VS</div>
+      <div class="team away">
+        <span class="flag">${B.f}</span>
+        <div class="tinfo"><div class="tname">${B.n}</div><div class="trank">世界第 ${B.rank} 档</div></div>
+      </div>
+    </div>
+    <div class="m-foot">
+      <div class="probbar">
+        <i class="seg-h" style="width:${md.pH*100}%"></i>
+        <i class="seg-d" style="width:${md.pD*100}%"></i>
+        <i class="seg-a" style="width:${md.pA*100}%"></i>
+      </div>
+      <div class="problbl">
+        <span>主胜 <b>${pct(md.pH)}</b></span>
+        <span>平 <b>${pct(md.pD)}</b></span>
+        <span>客胜 <b>${pct(md.pA)}</b></span>
+      </div>
+    </div>
+  </div>`;
+}
+function renderSchedule(){
+  const q=searchTerm.trim();
+  let html='';
+  groups.forEach(g=>{
+    if(selected!=='ALL'&&g.name!==selected)return;
+    let ms=matches.filter(m=>m.group===g.name&&(!q||m.A.n.includes(q)||m.B.n.includes(q)));
+    if(!ms.length)return;
+    ms.sort((a,b)=>a.mdi-b.mdi);
+    html+=`<div class="group-block">
+      <div class="group-head"><span class="gtag">${g.name}</span>小组赛
+        <span class="ghint">${g.teams.map(t=>t.f).join(' ')}</span></div>`;
+    ms.forEach(m=>html+=matchCard(m));
+    html+=`</div>`;
+  });
+  schedEl.innerHTML=html||`<div class="empty">🔍 没有找到匹配「${q}」的比赛</div>`;
+}
+
+/* ============================================================
+   渲染：弹框
+   ============================================================ */
+function fImpact(fac){
+  if(fac.type==='total'){
+    const v=fac.totalEff;const cls=v>=0?'h':'a';
+    return `<div class="fimpact">
+      <span class="fval n">整体节奏 ${v>=0?'+':''}${v.toFixed(1)}%</span>
+      <span style="font-size:10px;color:var(--mut2)">影响双方</span></div>`;
+  }
+  const net=fac.sA-fac.sB;
+  const mag=Math.min(Math.abs(net),12)/12*50;
+  const bar=net>=0?`<i class="r" style="width:${mag}%"></i>`:`<i class="l" style="width:${mag}%"></i>`;
+  const dir=Math.abs(net)<0.6?{t:'势均力敌',c:'n'}:(net>0?{t:'利好主队',c:'h'}:{t:'利好客队',c:'a'});
+  return `<div class="fimpact">
+    <span class="fval ${dir.c}">${dir.t} ${Math.abs(net)<0.6?'':((net>0?'+':'−')+Math.abs(net).toFixed(1)+'%')}</span>
+    <div class="fbar"><div class="c"></div>${bar}</div></div>`;
+}
+
+function scoreRow(s){
+  const cls=s.i>s.j?'h':(s.i===s.j?'d':'a');
+  const o=oddsScore(s.p);
+  const barW=Math.min(s.p*100*2.6,54);
+  return `<tr class="srow">
+    <td><span class="score ${cls}">${s.i} : ${s.j}</span></td>
+    <td><span class="pcell">${pct(s.p)}</span><span class="pbarmini" style="width:${barW}px"></span></td>
+    <td class="ocell">${od(o.euro)}</td>
+    <td class="ocell a-od">${od(o.asia)}</td>
+    <td class="ocell">${od(o.cai)}</td>
+  </tr>`;
+}
+
+function openModal(id){
+  const m=matches.find(x=>x.id===id);if(!m)return;
+  const md=m.model,A=m.A,B=m.B,ah=md.ah;
+  const eH=odds1x2(md.pH),eD=odds1x2(md.pD),eA=odds1x2(md.pA);
+  const ahTxt=ah.line===0
+    ? `平手盘 · 主 @${od(ah.favOdds)} / 客 @${od(ah.dogOdds)}`
+    : (ah.favA
+      ? `主队 -${ah.line} @${od(ah.favOdds)} · 客队 +${ah.line} @${od(ah.dogOdds)}`
+      : `客队 -${ah.line} @${od(ah.favOdds)} · 主队 +${ah.line} @${od(ah.dogOdds)}`);
+
+  let factorsHtml='';
+  md.factors.forEach(f=>{
+    factorsHtml+=`<div class="factor">
+      <div class="fic">${f.ic}</div>
+      <div class="fmain"><div class="fname">${f.name}</div><div class="fnote">${f.note}</div></div>
+      ${fImpact(f)}
+    </div>`;
+  });
+
+  let rowsHtml='';
+  md.top.forEach(s=>rowsHtml+=scoreRow(s));
+  rowsHtml+=`<tr class="srow rest"><td>其余各比分</td><td>合计 ${pct(md.rest)}</td><td colspan="3">小概率冷门比分</td></tr>`;
+
+  const html=`
+  <div class="mhead">
+    <div class="mh-top">
+      <div class="left">
+        <span class="chip">小组 ${m.group} · 第 ${m.mdi+1} 轮</span>
+        <span class="chip">📅 ${m.date} ${m.time}</span>
+        <span class="chip">${m.venue.cc} ${m.venue.city}</span>
+        <span class="chip">${md.w.ic} ${md.w.temp}°C ${md.w.nm} 湿度${md.w.hum}%</span>
+      </div>
+      <button class="close" onclick="closeModal()">✕</button>
+    </div>
+    <div class="mh-teams">
+      <div class="team"><span class="flag">${A.f}</span>
+        <div class="tinfo"><div class="tname">${A.n}</div><div class="trank">实力评分 ${A.r}</div></div></div>
+      <div class="vs">VS</div>
+      <div class="team away"><span class="flag">${B.f}</span>
+        <div class="tinfo"><div class="tname">${B.n}</div><div class="trank">实力评分 ${B.r}</div></div></div>
+    </div>
+  </div>
+
+  <div class="sec">
+    <div class="sec-h"><span class="i">🎯</span>胜平负综合概率
+      <span class="note">预期进球 ${md.lamA.toFixed(2)} : ${md.lamB.toFixed(2)}</span></div>
+    <div class="wdl">
+      <div class="cell h ${md.pH>=md.pD&&md.pH>=md.pA?'hl':''}"><div class="lab">主胜</div><div class="big">${pct(md.pH)}</div></div>
+      <div class="cell d ${md.pD>=md.pH&&md.pD>=md.pA?'hl':''}"><div class="lab">平局</div><div class="big">${pct(md.pD)}</div></div>
+      <div class="cell a ${md.pA>=md.pH&&md.pA>=md.pD?'hl':''}"><div class="lab">客胜</div><div class="big">${pct(md.pA)}</div></div>
+    </div>
+    <div class="mkt">
+      <div class="mkt-row"><span class="tag">欧赔</span><span class="val">
+        <span class="od"><b>主</b>${od(eH.euro)}</span><span class="od"><b>平</b>${od(eD.euro)}</span><span class="od"><b>客</b>${od(eA.euro)}</span></span></div>
+      <div class="mkt-row"><span class="tag">亚盘</span><span class="val"><span class="od" style="white-space:normal">${ahTxt}</span></span></div>
+      <div class="mkt-row"><span class="tag">足彩SP</span><span class="val">
+        <span class="od"><b>胜</b>${od(eH.cai)}</span><span class="od"><b>平</b>${od(eD.cai)}</span><span class="od"><b>负</b>${od(eA.cai)}</span></span></div>
+    </div>
+  </div>
+
+  <div class="sec">
+    <div class="sec-h"><span class="i">🧮</span>综合因素分析<span class="note">7 大维度加权</span></div>
+    ${factorsHtml}
+  </div>
+
+  <div class="sec">
+    <div class="sec-h"><span class="i">⚽</span>各比分概率 & 盘口赔率</div>
+    <div class="legend">
+      <span><b>概率</b>＝模型测算</span>
+      <span><b>欧</b>＝欧洲欧赔（含本金）</span>
+      <span><b>亚</b>＝亚洲/香港盘（净赔）</span>
+      <span><b>足彩</b>＝竞彩比分 SP</span>
+    </div>
+    <table class="stbl">
+      <thead><tr><th>比分</th><th>概率</th><th>欧</th><th>亚</th><th>足彩</th></tr></thead>
+      <tbody>${rowsHtml}</tbody>
+    </table>
+    <div style="font-size:10.5px;color:var(--mut2);margin-top:11px;line-height:1.6">
+      📌 比分按概率从高到低排列，左侧色条：<span style="color:var(--gold)">金=主胜</span> /
+      <span style="color:#aab4cc">灰=平局</span> / <span style="color:var(--blue)">蓝=客胜</span>。
+      同一比分欧/亚/足彩赔率不同，源于各盘口<b>抽水率（margin）</b>差异。
+    </div>
+  </div>
+
+  <div class="sec" style="text-align:center;color:var(--mut2);font-size:11px;line-height:1.7">
+    ⚠️ 以上全部为<b>算法娱乐模拟</b>，不代表真实赔率或赛果，<br>不构成任何投注建议。理性观赛，远离赌博。
+  </div>`;
+
+  document.getElementById('modal').innerHTML=html;
+  document.getElementById('modal').scrollTop=0;
+  document.getElementById('ovl').classList.add('show');
+  document.body.style.overflow='hidden';
+  try{history.replaceState(null,'','#'+m.id);}catch(e){}
+}
+function closeModal(){
+  document.getElementById('ovl').classList.remove('show');
+  document.body.style.overflow='';
+  try{history.replaceState(null,'',location.pathname+location.search);}catch(e){}
+}
+
+/* ============================================================
+   事件
+   ============================================================ */
+pillsEl.addEventListener('click',e=>{
+  const p=e.target.closest('.pill');if(!p)return;
+  selected=p.dataset.g;renderPills();renderSchedule();
+});
+schedEl.addEventListener('click',e=>{
+  const c=e.target.closest('.match');if(!c)return;
+  openModal(c.dataset.id);
+});
+document.getElementById('search').addEventListener('input',e=>{
+  searchTerm=e.target.value;renderSchedule();
+});
+document.getElementById('ovl').addEventListener('click',e=>{
+  if(e.target.id==='ovl')closeModal();
+});
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closeModal();});
+// 重新生成：写入新种子并记忆，整套预测随之刷新；不点则永久固定
+document.getElementById('regen').addEventListener('click',()=>{
+  if(!confirm('重新随机生成一套全新的预测数据吗？\n当前这套结果将被替换（之后每次打开仍会固定为新的一套）。'))return;
+  const ns='wc-'+Date.now().toString(36)+'-'+Math.floor(Math.random()*1e9).toString(36);
+  try{localStorage.setItem(SEED_KEY,ns);}catch(e){}
+  location.reload();
+});
+
+renderPills();
+renderSchedule();
+// 深链：打开 worldcup.html#A-0-0 可直达某场比赛弹框（可分享）
+(function(){
+  const id=decodeURIComponent(location.hash.replace(/^#/,''));
+  if(id&&matches.some(m=>m.id===id))openModal(id);
+})();
+</script>
+</body>
+</html>
